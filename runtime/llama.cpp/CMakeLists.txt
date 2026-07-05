@@ -16,9 +16,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)   # static deps -> self-contained binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
+option(FUNASR_BUILD_RUST "Build the Rust C ABI bridge library" OFF)
 
 include(FetchContent)
 set(LLAMA_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
@@ -43,3 +47,17 @@ endfunction()
 
 funasr_add(llama-funasr-sensevoice funasr-sensevoice/funasr-sensevoice.cpp ggml)
 funasr_add(llama-funasr-vad funasr-vad/funasr-vad.cpp ggml)
+
+if(FUNASR_BUILD_RUST)
+    add_library(funasr_rs SHARED funasr-capi/funasr_c_api.cpp)
+    target_include_directories(funasr_rs
+        PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR}/funasr-capi
+        PRIVATE
+            ${FUNASR_COMMON})
+    target_link_libraries(funasr_rs PRIVATE ggml Threads::Threads)
+    install(TARGETS funasr_rs
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+endif()

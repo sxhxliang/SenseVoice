@@ -15,6 +15,7 @@ dist
 build
 funasr.egg-info
 docs/_build
+/target/
 modelscope
 samples
 .ipynb_checkpoints

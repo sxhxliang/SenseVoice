@@ -1,0 +1,21 @@
+[package]
+name = "sensevoice"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+build = "build.rs"
+links = "funasr_rs"
+
+[lib]
+name = "sensevoice"
+path = "src/lib.rs"
+
+[dependencies]
+cpal = "0.15"
+
+[lints.rust]
+unsafe_code = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
