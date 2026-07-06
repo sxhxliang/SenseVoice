@@ -1,0 +1,61 @@
+name: Rust
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  check:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux native dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y cmake clang libasound2-dev
+
+      - name: Install macOS native dependencies
+        if: runner.os == 'macOS'
+        run: brew install cmake
+
+      - name: Install Windows native dependencies
+        if: runner.os == 'Windows'
+        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+
+      - name: Check examples
+        run: cargo check --examples
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake clang libasound2-dev
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Check docs.rs mode
+        run: DOCS_RS=1 cargo doc --no-deps
+
+      - name: Verify package contents
+        run: cargo package --list
+
+      - name: Publish dry run
+        run: cargo publish --dry-run

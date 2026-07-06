@@ -3,14 +3,36 @@ name = "sensevoice"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
+description = "Rust bindings for SenseVoice ASR with a ggml/FSMN-VAD native runtime"
+readme = "README-rs.md"
+repository = "https://github.com/FunAudioLLM/SenseVoice"
+homepage = "https://github.com/FunAudioLLM/SenseVoice"
+documentation = "https://docs.rs/sensevoice"
+license-file = "LICENSE"
+keywords = ["asr", "speech", "sensevoice", "ggml"]
+categories = ["multimedia::audio", "api-bindings"]
 build = "build.rs"
 links = "funasr_rs"
+include = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "README-rs.md",
+    "LICENSE",
+    "src/**",
+    "examples/**",
+    "runtime/llama.cpp/CMakeLists.txt",
+    "runtime/llama.cpp/funasr-capi/**",
+    "runtime/llama.cpp/funasr-common/**",
+    "runtime/llama.cpp/funasr-sensevoice/funasr-sensevoice.cpp",
+    "runtime/llama.cpp/funasr-vad/funasr-vad.cpp",
+]
 
 [lib]
 name = "sensevoice"
 path = "src/lib.rs"
 
-[dependencies]
+[dev-dependencies]
 cpal = "0.15"
 
 [lints.rust]
