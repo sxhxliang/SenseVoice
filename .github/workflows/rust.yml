@@ -28,12 +28,25 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install cmake
 
-      - name: Install Windows native dependencies
-        if: runner.os == 'Windows'
-        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+      - name: Show native toolchain
+        run: cmake --version
 
-      - name: Check examples
-        run: cargo check --examples
+      - name: Test library and examples
+        run: cargo test --lib --examples
+
+      - name: Verify Windows DLL deployment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          @(
+            "target/debug/funasr_rs.dll",
+            "target/debug/deps/funasr_rs.dll",
+            "target/debug/examples/funasr_rs.dll"
+          ) | ForEach-Object {
+            if (-not (Test-Path $_)) {
+              throw "missing native runtime: $_"
+            }
+          }
 
   package:
     name: Package

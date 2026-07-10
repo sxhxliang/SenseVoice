@@ -17,11 +17,37 @@ inline bool funasr_load_audio_16k_mono(const char * path, std::vector<float> & o
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 #include <cstdio>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#ifdef _WIN32
+inline bool funasr_utf8_to_wide(const char * path, std::vector<wchar_t> & wide_path) {
+    int length = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path, -1, nullptr, 0);
+    if (length <= 0) {
+        return false;
+    }
+    wide_path.resize((size_t)length);
+    return MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, path, -1, wide_path.data(), length) > 0;
+}
+#endif
+
 inline bool funasr_load_audio_16k_mono(const char * path, std::vector<float> & out) {
     if (!path) { fprintf(stderr, "audio: null path\n"); return false; }
     ma_decoder_config cfg = ma_decoder_config_init(ma_format_f32, 1, 16000); // f32, mono, 16k
     ma_decoder dec;
-    if (ma_decoder_init_file(path, &cfg, &dec) != MA_SUCCESS) {
+    ma_result init_result;
+#ifdef _WIN32
+    std::vector<wchar_t> wide_path;
+    if (!funasr_utf8_to_wide(path, wide_path)) {
+        fprintf(stderr, "audio: path is not valid UTF-8\n");
+        return false;
+    }
+    init_result = ma_decoder_init_file_w(wide_path.data(), &cfg, &dec);
+#else
+    init_result = ma_decoder_init_file(path, &cfg, &dec);
+#endif
+    if (init_result != MA_SUCCESS) {
         fprintf(stderr, "audio: failed to open/decode %s (supported: wav/mp3/flac)\n", path);
         return false;
     }

@@ -15,6 +15,13 @@ project(funasr-llamacpp-sensevoice CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)   # static deps -> self-contained binaries
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    add_compile_options(/utf-8)
+endif()
+if(WIN32)
+    add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN)
+endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -56,12 +63,16 @@ funasr_add(llama-funasr-vad funasr-vad/funasr-vad.cpp ggml)
 
 if(FUNASR_BUILD_RUST)
     add_library(funasr_rs SHARED funasr-capi/funasr_c_api.cpp)
+    target_compile_definitions(funasr_rs PRIVATE FUNASR_RS_EXPORTS)
     target_include_directories(funasr_rs
         PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}/funasr-capi
         PRIVATE
             ${FUNASR_COMMON})
     target_link_libraries(funasr_rs PRIVATE ggml Threads::Threads)
+    if(WIN32)
+        set_target_properties(funasr_rs PROPERTIES PREFIX "")
+    endif()
     install(TARGETS funasr_rs
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib

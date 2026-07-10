@@ -94,6 +94,34 @@ FUNASR_LLAMA_SOURCE=/path/to/llama.cpp cargo build
 
 Model files are runtime inputs and are intentionally not part of the crate package.
 
+### Windows
+
+Use the MSVC Rust toolchain on Windows. Install:
+
+- Rust stable for `x86_64-pc-windows-msvc`
+- Visual Studio 2022 Build Tools with **Desktop development with C++**
+- A Windows 10/11 SDK
+- CMake and Git available in `PATH`
+
+Windows ARM64 is also supported when Cargo, MSVC, the Windows SDK, and the CMake
+generator are all configured for `aarch64-pc-windows-msvc`.
+
+PowerShell example:
+
+```powershell
+rustup default stable-x86_64-pc-windows-msvc
+cargo build --release
+cargo run --example microphone_realtime -- --list-devices
+cargo run --example microphone_realtime -- --device 0
+```
+
+The build script compiles ggml and the C ABI bridge, then copies
+`funasr_rs.dll` into Cargo's binary, dependency, and example output directories.
+When distributing a standalone application, ship
+`target\release\funasr_rs.dll` beside the application `.exe`. Model GGUF files
+remain separate runtime files and can be placed anywhere the application can
+access.
+
 ## Publishing
 
 The crate package uses an explicit `include` whitelist in `Cargo.toml`; `models/`

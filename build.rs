@@ -1,5 +1,6 @@
 use std::collections::hash_map::DefaultHasher;
 use std::env;
+use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -72,7 +73,9 @@ fn main() {
     println!("cargo:rustc-link-lib=dylib=funasr_rs");
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
-    if target_os == "macos" || target_os == "linux" {
+    if target_os == "windows" {
+        install_windows_runtime(&build_dir, &out_dir, build_type);
+    } else if target_os == "macos" || target_os == "linux" {
         if let Some(lib_dir) = lib_dirs.first() {
             println!(
                 "cargo:rustc-link-arg=-Wl,-rpath,{}",
@@ -80,6 +83,70 @@ fn main() {
             );
         }
     }
+}
+
+fn install_windows_runtime(build_dir: &Path, out_dir: &Path, build_type: &str) {
+    let dll = windows_runtime_candidates(build_dir, build_type)
+        .into_iter()
+        .find(|path| path.is_file())
+        .unwrap_or_else(|| {
+            panic!(
+                "CMake built funasr_rs but its Windows runtime DLL was not found under {}",
+                build_dir.display()
+            )
+        });
+    let profile_dir = cargo_profile_dir(out_dir).unwrap_or_else(|| {
+        panic!(
+            "cannot determine Cargo profile directory from OUT_DIR={}",
+            out_dir.display()
+        )
+    });
+
+    for destination_dir in [
+        profile_dir.to_path_buf(),
+        profile_dir.join("deps"),
+        profile_dir.join("examples"),
+    ] {
+        fs::create_dir_all(&destination_dir).unwrap_or_else(|error| {
+            panic!(
+                "failed to create Windows runtime directory {}: {error}",
+                destination_dir.display()
+            )
+        });
+        let destination = destination_dir.join("funasr_rs.dll");
+        fs::copy(&dll, &destination).unwrap_or_else(|error| {
+            panic!(
+                "failed to copy {} to {}: {error}",
+                dll.display(),
+                destination.display()
+            )
+        });
+    }
+
+    println!("cargo::metadata=runtime_dll={}", dll.display());
+}
+
+fn windows_runtime_candidates(build_dir: &Path, build_type: &str) -> Vec<PathBuf> {
+    let bin_dir = build_dir.join("bin");
+    let lib_dir = build_dir.join("lib");
+    [
+        bin_dir.join("funasr_rs.dll"),
+        bin_dir.join(build_type).join("funasr_rs.dll"),
+        bin_dir.join("libfunasr_rs.dll"),
+        bin_dir.join(build_type).join("libfunasr_rs.dll"),
+        lib_dir.join("funasr_rs.dll"),
+        lib_dir.join(build_type).join("funasr_rs.dll"),
+    ]
+    .into_iter()
+    .collect()
+}
+
+fn cargo_profile_dir(out_dir: &Path) -> Option<&Path> {
+    let build_root = out_dir.parent()?.parent()?;
+    if build_root.file_name()? != "build" {
+        return None;
+    }
+    build_root.parent()
 }
 
 fn add_llama_source_override(configure: &mut Command) {
@@ -103,11 +170,10 @@ fn native_library_dirs(build_dir: &Path, build_type: &str) -> Vec<PathBuf> {
     let lib_dir = build_dir.join("lib");
     let config_lib_dir = lib_dir.join(build_type);
 
-    let mut dirs = Vec::new();
+    let mut dirs = vec![lib_dir];
     if config_lib_dir.is_dir() {
         dirs.push(config_lib_dir);
     }
-    dirs.push(lib_dir);
     dirs
 }
 

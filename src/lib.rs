@@ -429,3 +429,16 @@ fn model_rank(path: &Path) -> i32 {
 fn non_empty(text: String) -> Option<String> {
     if text.is_empty() { None } else { Some(text) }
 }
+
+#[cfg(test)]
+#[allow(unsafe_code)]
+mod tests {
+    use super::{ffi, ptr};
+
+    #[test]
+    fn native_runtime_can_be_loaded() {
+        // SAFETY: C `free(NULL)` is a no-op. This call verifies that the native
+        // library can be linked and loaded without requiring model files.
+        unsafe { ffi::sv_string_free(ptr::null_mut()) };
+    }
+}
