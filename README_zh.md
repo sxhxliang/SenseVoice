@@ -10,7 +10,7 @@ SenseVoice 是具有音频理解能力的音频基础模型，包括语音识别
 
 <div align="center">  
 <h4>
-<a href="https://funaudiollm.github.io/"> Homepage </a>
+<a href="https://www.funasr.com/"> Homepage </a>
 ｜<a href="#最新动态"> 最新动态 </a>
 ｜<a href="#性能评测"> 性能评测 </a>
 ｜<a href="#环境安装"> 环境安装 </a>
@@ -19,24 +19,26 @@ SenseVoice 是具有音频理解能力的音频基础模型，包括语音识别
 
 </h4>
 
-模型仓库：[modelscope](https://www.modelscope.cn/models/iic/SenseVoiceSmall)，[huggingface](https://huggingface.co/FunAudioLLM/SenseVoiceSmall)
+模型仓库：[modelscope](https://www.modelscope.cn/models/iic/SenseVoiceSmall)，[huggingface](https://huggingface.co/FunAudioLLM/SenseVoiceSmall)，[论文](https://arxiv.org/abs/2407.04051)
 
 在线体验：
 [modelscope demo](https://www.modelscope.cn/studios/iic/SenseVoice), [huggingface space](https://huggingface.co/spaces/FunAudioLLM/SenseVoice)
 
 </div>
 
+> **已发布 checkpoint 范围：** SenseVoiceSmall 支持中文、粤语、英文、日文和韩文的 ASR 与语种识别，并输出情感和音频事件标签。说话人分离是 FunASR 组合独立 FSMN-VAD 与 CAM++ 的 pipeline 能力，并非 SenseVoiceSmall checkpoint 本身的输出。
+
 <a name="核心功能"></a>
 
 # 核心功能 🎯
 
-**SenseVoice** 专注于高精度多语言语音识别、情感辨识和音频事件检测
+**SenseVoice** 专注于高精度多语言语音识别、情感辨识和音频事件检测。
 
-- **多语言识别：** 采用超过 40 万小时数据训练，支持超过 50 种语言，识别效果上优于 Whisper 模型。
+- **研究范围与已发布 checkpoint：** 更广泛的 SenseVoice 研究描述采用超过 40 万小时数据训练并覆盖 50 多种语言；当前公开的 SenseVoiceSmall checkpoint 支持中文、粤语、英文、日文和韩文，下面的 benchmark 对比仅对应所列任务与语种。
 - **富文本识别：**
   - 具备优秀的情感识别，能够在测试数据上达到和超过目前最佳情感识别模型的效果。
   - 支持声音事件检测能力，支持音乐、掌声、笑声、哭声、咳嗽、喷嚏等多种常见人机交互事件进行检测。
-- **高效推理：** SenseVoice-Small 模型采用非自回归端到端框架，推理延迟极低，10s 音频推理仅耗时 70ms，15 倍优于 Whisper-Large。
+- **高效推理：** SenseVoiceSmall 采用非自回归端到端框架，具有低延迟推理能力；具体测试条件与速度对比见下方 benchmark。
 - **微调定制：** 具备便捷的微调脚本与策略，方便用户根据业务场景修复长尾样本问题。
 - **服务部署：** 具有完整的服务部署链路，支持多并发请求，支持客户端语言有，python、c++、html、java 与 c# 等。
 
@@ -44,11 +46,11 @@ SenseVoice 是具有音频理解能力的音频基础模型，包括语音识别
 
 # 最新动态 🔥
 
-- 2026/05: SenseVoice 现已支持说话人分离。配合 `vad_model` + `spk_model` + `punc_model` 使用，可获得带说话人标签的逐句结果。需从源码安装 FunASR：`pip install git+https://github.com/modelscope/FunASR.git`
-- 2024/7：新增加导出 [ONNX](./demo_onnx.py) 与 [libtorch](./demo_libtorch.py) 功能，以及 python 版本 runtime：[funasr-onnx-0.4.0](https://pypi.org/project/funasr-onnx/)，[funasr-torch-0.1.1](https://pypi.org/project/funasr-torch/)
-- 2024/7: [SenseVoice-Small](https://www.modelscope.cn/models/iic/SenseVoiceSmall) 多语言音频理解模型开源，支持中、粤、英、日、韩语的多语言语音识别，情感识别和事件检测能力，具有极低的推理延迟。。
-- 2024/7: CosyVoice 致力于自然语音生成，支持多语言、音色和情感控制，擅长多语言语音生成、零样本语音生成、跨语言语音克隆以及遵循指令的能力。[CosyVoice repo](https://github.com/FunAudioLLM/CosyVoice) and [CosyVoice 在线体验](https://www.modelscope.cn/studios/iic/CosyVoice-300M).
-- 2024/7: [FunASR](https://github.com/modelscope/FunASR) 是一个基础语音识别工具包，提供多种功能，包括语音识别（ASR）、语音端点检测（VAD）、标点恢复、语言模型、说话人验证、说话人分离和多人对话语音识别等。
+- **当前部署路径：** 安装 `funasr==1.4.14`，即可使用 SenseVoice 的 Python、OpenAI 兼容服务与容器工作流。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.4.14) · [SenseVoice Releases](https://github.com/QwenAudio/SenseVoice/releases)
+- **长音频无需 VAD：** `long_audio_no_vad.py` 使用有界重叠窗口并保留原始 chunk 输出，小时级录音不必一次送入模型占用无界显存。[运行脚本 ->](./long_audio_no_vad.py)
+- **一体化说话人标注：** 更广泛的 FunASR 生态已接入 OpenMOSS/MOSS-Transcribe-Diarize，离线输出转写、时间戳和匿名说话人标签，不需要业务侧手工拼 VAD 与 speaker 模型。[部署指南 ->](https://www.funasr.com/deploy/moss-transcribe-diarize.html)
+
+> 完整版本历史请查看 [Releases](https://github.com/QwenAudio/SenseVoice/releases)。
 
 <a name="Benchmarks"></a>
 
@@ -65,6 +67,8 @@ SenseVoice 是具有音频理解能力的音频基础模型，包括语音识别
 ## 情感识别
 
 由于目前缺乏被广泛使用的情感识别测试指标和方法，我们在多个测试集的多种指标进行测试，并与近年来 Benchmark 上的多个结果进行了全面的对比。所选取的测试集同时包含中文 / 英文两种语言以及表演、影视剧、自然对话等多种风格的数据，在不进行目标数据微调的前提下，SenseVoice 能够在测试数据上达到和超过目前最佳情感识别模型的效果。
+
+需要复现零训练的 CASIA 或 RAVDESS 结果时，请使用 [SER 评测契约](./benchmarks/ser/README.md)。该脚本直接读取 SenseVoice 原始情感标签，同时输出 UA 和 WA；不要从富文本转写结果中用字符串切分推断情感标签。
 
 <div align="center">  
 <img src="image/ser_table.png" width="1000" />
@@ -86,7 +90,7 @@ SenseVoice 是具有音频理解能力的音频基础模型，包括语音识别
 
 ## 推理效率
 
-SenseVoice-small 模型采用非自回归端到端架构，推理延迟极低。在参数量与 Whisper-Small 模型相当的情况下，比 Whisper-Small 模型推理速度快 5 倍，比 Whisper-Large 模型快 15 倍。同时 SenseVoice-small 模型在音频时长增加的情况下，推理耗时也无明显增加。
+在下图所示 benchmark 设置中，SenseVoiceSmall 采用非自回归端到端架构；在参数量与 Whisper-Small 相当的情况下，其推理速度比 Whisper-Small 快 5 倍以上，比 Whisper-Large 快 15 倍。
 
 <div align="center">  
 <img src="image/inference.png" width="1000" />
@@ -100,6 +104,8 @@ SenseVoice-small 模型采用非自回归端到端架构，推理延迟极低。
 pip install -r requirements.txt
 ```
 
+SenseVoiceSmall 示例与 FunASR 组合说话人分离路径需要 `funasr>=1.3.26`。如果你之前已经安装过本仓库，请先执行 `pip install -U "funasr>=1.3.26"`，再重新运行 demo。
+
 <a name="用法教程"></a>
 
 # 用法 🛠️
@@ -108,7 +114,14 @@ pip install -r requirements.txt
 
 ### 使用 funasr 推理
 
-支持任意格式音频输入，支持任意时长输入
+支持常见格式音频输入。长录音必须先分段再送入编码器；下例使用 FSMN-VAD 完成分段。
+
+使用 `remote_code="./model.py"` 时，升级 FunASR 包不会同步更新本地的
+`model.py`，请同时更新仓库源码。当前时间戳格式为 `timestamp=[[开始毫秒, 结束毫秒], ...]`，
+与 `words` 一一对应；旧版的 `[词元, 开始秒, 结束秒]` 三元组不兼容 VAD 聚合。
+直接调用模型的代码也需改为从 `words` 读取文字，参见 [demo2.py](./demo2.py)。
+说话人组合示例见 [Speaker Diarization](./README.md#speaker-diarization)，已用
+FunASR 1.4.15 和固定公开样本验证流程；这不是说话人准确率或真实身份识别验证。
 
 ```python
 from funasr import AutoModel
@@ -154,6 +167,25 @@ print(text)
 - `ban_emo_unk`：禁用 emo_unk 标签，禁用后所有的句子都会被赋与情感标签。默认 `False`
 
 </details>
+
+### 不使用 VAD 的长音频推理
+
+把一小时波形直接传给一次 `model.generate` 会使编码器内存远大于音频文件本身。
+当业务不能接受 VAD 时，可使用有界内存参考脚本。它通过 ffmpeg 解码，以默认 30 秒
+窗口和 2 秒重叠调用 SenseVoice，并且不会配置 VAD 模型：
+
+```bash
+python long_audio_no_vad.py meeting.mp3 \
+  --output meeting.txt \
+  --window-seconds 30 \
+  --overlap-seconds 2
+```
+
+合并文本只删除相邻窗口边界处完全相同的重复文字。`meeting.chunks.jsonl` 会保留每个
+窗口的原始模型输出和窗口偏移，因此不匹配的内容不会被静默丢弃；传入 `--no-dedupe`
+可连完全匹配的去重也关闭。窗口偏移是输入窗口边界，并非逐词时间戳。此路径避免把
+整段录音送入编码器造成 OOM，但固定切点仍可能影响边界附近的识别；业务允许按内容
+分段时，仍推荐使用上面的 VAD pipeline。
 
 如果输入均为短音频（小于 30s），并且需要批量化推理，为了加快推理效率，可以移除 vad 模型，并设置 `batch_size`
 
@@ -247,6 +279,17 @@ print([rich_transcription_postprocess (i) for i in res])
 
 </details>
 
+### CPU/边缘端运行：llama.cpp / GGUF（无需 GPU，无需 Python）
+
+SenseVoice 可以作为**单个自包含二进制**运行。这个路径类似 Whisper 的 whisper.cpp，但在中文与粤语场景下更适合 SenseVoice；运行时内置 FSMN-VAD，无需 Python 环境。
+
+```bash
+bash runtime/llama.cpp/download-funasr-model.sh sensevoice ./gguf
+llama-funasr-sensevoice -m ./gguf/sensevoice-small-f16.gguf --vad ./gguf/fsmn-vad.gguf -a audio.wav
+```
+
+**预编译二进制：** [Releases](https://github.com/QwenAudio/SenseVoice/releases) · **下载与快速开始：** [funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · **GGUF 模型：** [Hugging Face](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF) · **文档与 benchmark：** [runtime/llama.cpp/](./runtime/llama.cpp/)
+
 ### 部署
 
 ### 使用 FastAPI 部署
@@ -256,12 +299,36 @@ export SENSEVOICE_DEVICE=cuda:0
 fastapi run --port 50000
 ```
 
+### 使用 Docker 构建
+
+```bash
+docker build -t sensevoice .
+```
+
+> 构建工作流也会发布 `ghcr.io/qwenaudio/sensevoice`，但该容器包当前为
+> private，匿名拉取会返回 HTTP 401。在[容器包页面](https://github.com/QwenAudio/SenseVoice/pkgs/container/sensevoice)
+> 显示 Public 之前，请使用上面的本地构建。
+
+### 运行（GPU，默认）
+
+```bash
+docker run --rm --gpus all -p 50000:50000 -v sensevoice-models:/models sensevoice
+```
+
+### 运行（仅 CPU）
+
+```bash
+docker run --rm -e SENSEVOICE_DEVICE=cpu -p 50000:50000 -v sensevoice-models:/models sensevoice
+```
+
+容器健康后访问 `http://127.0.0.1:50000/docs`。
+
 ## 微调
 
 ### 安装训练环境
 
 ```shell
-git clone https://github.com/alibaba/FunASR.git && cd FunASR
+git clone https://github.com/modelscope/FunASR.git && cd FunASR
 pip3 install -e ./
 ```
 
@@ -393,10 +460,18 @@ python webui.py
 
 - Triton（GPU）部署最佳实践，triton + tensorrt，fp32 测试，V100 GPU 上加速比 526，fp16 支持中，[repo](https://github.com/modelscope/FunASR/blob/main/runtime/triton_gpu/README.md)
 - sherpa-onnx 部署最佳实践，支持在 10 种编程语言里面使用 SenseVoice, 即 C++, C, Python, C#, Go, Swift, Kotlin, Java, JavaScript, Dart. 支持在 iOS, Android, Raspberry Pi 等平台使用 SenseVoice，[repo](https://k2-fsa.github.io/sherpa/onnx/sense-voice/index.html)
+- [Orca](https://github.com/stablyai/orca) 已通过 sherpa-onnx 集成 SenseVoice 本地离线语音识别，支持在 macOS、Linux 和 Windows 上自动识别中文、英文、日文、韩文和粤语。该集成已在 [#7436](https://github.com/stablyai/orca/pull/7436) 合并，当前可通过 [v1.4.159-rc.1 预发布版](https://github.com/stablyai/orca/releases/tag/v1.4.159-rc.1) 使用；Orca v1.4.158 稳定版发布早于本次集成。
 - [SenseVoice.cpp](https://github.com/lovemefan/SenseVoice.cpp) 基于GGML，在纯C/C++中推断SenseVoice，支持3位、4位、5位、8位量化等，无需第三方依赖。
 - [流式SenseVoice](https://github.com/pengzhendong/streaming-sensevoice)，通过分块（chunk）的方式进行推理，为了实现伪流式处理，采用了截断注意力机制（truncated attention），牺牲了部分精度。此外，该技术还支持CTC前缀束搜索（CTC prefix beam search）以及热词增强功能。
 - [OmniSenseVoice](https://github.com/lifeiteng/OmniSenseVoice) 轻量化推理库，支持batch推理。
 - [SenseVoice Hotword](https://www.modelscope.cn/models/dengcunqin/SenseVoiceSmall_hotword)，神经网络热词增强，[WeNet 中开源基于 CPPN 的神经网络热词增强](https://mp.weixin.qq.com/s/1QkIvh8j7rrUjRyWOgAvdA)。
+
+## 许可证
+
+- 本仓库源码采用 [MIT License](./LICENSE)。
+- 模型权重单独发布，并以各模型卡标注的条款为准。官方 [SenseVoiceSmall 模型卡](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) 链接至 [FunASR 模型开源协议](https://github.com/modelscope/FunASR/blob/main/MODEL_LICENSE)；其他制品和转换版本可能标注不同条款，使用前请核对对应模型卡。
+- 维护者已针对 [FunASR 模型开源协议 v1.1](https://github.com/modelscope/FunASR/blob/58830eca4012644aac0c3218c3ccc7d98f003fda/MODEL_LICENSE) 发布 [SenseVoiceSmall 官方许可澄清](https://github.com/QwenAudio/SenseVoice/issues/334#issuecomment-5083546605)：遵守模型协议时，允许商业使用官方 SenseVoiceSmall 权重；第 3 节属于责任和风险免责声明，不构成额外的“禁止商用”限制；微调后的衍生权重可以保持私有。使用、复制、修改或分享模型时，仍需遵守第 2.2 节的署名和模型名称要求。此澄清仅适用于官方权重，第三方转换版本和打包制品仍需分别核对其条款。
+
 # 联系我们
 
 如果您在使用中遇到问题，可以直接在 github 页面提 Issues。欢迎语音兴趣爱好者扫描以下的钉钉群二维码加入社区群，进行交流和讨论。

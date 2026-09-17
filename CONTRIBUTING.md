@@ -61,10 +61,19 @@ fastapi run --port 50000
 
 ### Reporting Bugs
 
-1. Search [existing issues](https://github.com/FunAudioLLM/SenseVoice/issues) to avoid duplicates.
-2. Use the [Bug Report template](https://github.com/FunAudioLLM/SenseVoice/issues/new?template=bug_report.md).
+1. Search [existing issues](https://github.com/QwenAudio/SenseVoice/issues) to avoid duplicates.
+2. Use the [Bug Report template](https://github.com/QwenAudio/SenseVoice/issues/new?template=bug_report.md).
 3. Include your environment details (OS, Python version, PyTorch version, GPU, CUDA version).
 4. Provide a minimal code sample to reproduce the issue.
+
+### Resolving Issues
+
+A merged pull request, a green `main` branch, or an available release does not by itself prove that a reported problem is resolved. Keep user-reported issues open until either:
+
+- the reporter confirms the fix on the affected workflow; or
+- a maintainer reproduces the original failure, verifies the fix in a publicly available version, records the evidence in the issue, and allows a reasonable feedback window.
+
+When a fix needs a release, link the released version and ask the reporter to retest before closing. Use a waiting-for-feedback label when available instead of treating silence as confirmation.
 
 ### Submitting Pull Requests
 
@@ -78,13 +87,13 @@ git checkout -b your-branch-name
 
 3. **Test your changes** to make sure nothing is broken.
 
-4. **Push to your fork** and open a Pull Request against `FunAudioLLM/SenseVoice:main`.
+4. **Push to your fork** and open a Pull Request against `QwenAudio/SenseVoice:main`.
 
 5. **Describe your changes** clearly in the PR description. Explain *what* changed and *why*.
 
 ### Types of Contributions We Welcome
 
-- **Bug fixes** — Check [open issues labeled `bug`](https://github.com/FunAudioLLM/SenseVoice/issues?q=is%3Aissue+is%3Aopen+label%3Abug) for known problems.
+- **Bug fixes** — Check [open issues labeled `bug`](https://github.com/QwenAudio/SenseVoice/issues?q=is%3Aissue+is%3Aopen+label%3Abug) for known problems.
 - **Documentation improvements** — Typo fixes, clarifications, additional examples, translations.
 - **New examples** — Demo scripts showing different use cases (emotion detection, event detection, multilingual transcription).
 - **Performance improvements** — Optimizations for inference speed or memory usage.
@@ -136,15 +145,17 @@ You can also run SenseVoice using Docker:
 docker build -t sensevoice .
 
 # Run with GPU
-docker run --gpus all -p 50000:50000 sensevoice
+docker run --rm --gpus all -p 50000:50000 -v sensevoice-models:/models sensevoice
 
 # Run on CPU
-docker run -e SENSEVOICE_DEVICE=cpu -p 50000:50000 sensevoice
+docker run --rm -e SENSEVOICE_DEVICE=cpu -p 50000:50000 -v sensevoice-models:/models sensevoice
 ```
+
+Do not advertise `docker pull` for `ghcr.io/qwenaudio/sensevoice` or the old Aliyun registry while those paths return HTTP 401 for anonymous clients. Port is 50000, not 60001.
 
 ## Questions?
 
-- Open an issue using the [Questions template](https://github.com/FunAudioLLM/SenseVoice/issues/new?template=ask_questions.md).
+- Open an issue using the [Questions template](https://github.com/QwenAudio/SenseVoice/issues/new?template=ask_questions.md).
 - Join the community via the DingTalk group (see [README](./README.md#community)).
 
 ## License
