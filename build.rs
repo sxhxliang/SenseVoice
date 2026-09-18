@@ -52,6 +52,7 @@ fn main() {
         .arg(format!("-DCMAKE_BUILD_TYPE={build_type}"))
         .arg("-DFUNASR_BUILD_RUST=ON")
         .arg("-DLLAMA_CURL=OFF");
+    add_windows_compatibility_flags(&mut configure);
     add_llama_source_override(&mut configure);
     run(configure);
 
@@ -160,10 +161,21 @@ fn add_llama_source_override(configure: &mut Command) {
             llama_source.display()
         );
     }
+
     configure.arg(format!(
         "-DFETCHCONTENT_SOURCE_DIR_LLAMA={}",
         llama_source.display()
     ));
+}
+
+fn add_windows_compatibility_flags(configure: &mut Command) {
+    if env::var("CARGO_CFG_TARGET_OS").ok().as_deref() == Some("windows")
+        && env::var("CARGO_CFG_TARGET_ENV").ok().as_deref() == Some("gnu")
+    {
+        configure
+            .arg("-DCMAKE_C_FLAGS=-D_WIN32_WINNT=0x0601")
+            .arg("-DCMAKE_CXX_FLAGS=-D_WIN32_WINNT=0x0601");
+    }
 }
 
 fn native_library_dirs(build_dir: &Path, build_type: &str) -> Vec<PathBuf> {

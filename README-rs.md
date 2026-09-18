@@ -106,6 +106,20 @@ Use the MSVC Rust toolchain on Windows. Install:
 Windows ARM64 is also supported when Cargo, MSVC, the Windows SDK, and the CMake
 generator are all configured for `aarch64-pc-windows-msvc`.
 
+The default build fetches the pinned `llama.cpp` source from GitHub. If GitHub is
+not reachable, clone that revision on a machine with network access and point
+Cargo at the checkout:
+
+```powershell
+$env:FUNASR_LLAMA_SOURCE = "D:\src\llama.cpp"
+cargo run --example microphone_realtime
+```
+
+When using the GNU/MinGW Rust toolchain, the build automatically selects a
+Windows 7 API compatibility level because some MinGW headers do not declare the
+newer thread power throttling types used by ggml. MSVC remains the recommended
+Windows toolchain.
+
 PowerShell example:
 
 ```powershell

@@ -21,6 +21,11 @@ if(MSVC)
 endif()
 if(WIN32)
     add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN)
+    if(NOT MSVC)
+        # Older MinGW-w64 headers do not provide the thread power throttling
+        # declarations selected for Windows 8 and newer.
+        add_compile_definitions(_WIN32_WINNT=0x0601 WINVER=0x0601)
+    endif()
 endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -86,4 +91,3 @@ target_include_directories(server-utils-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(server-utils-test PRIVATE Threads::Threads)
 set_target_properties(server-utils-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 add_test(NAME server-utils COMMAND server-utils-test)
-
